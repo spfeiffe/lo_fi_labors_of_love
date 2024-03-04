@@ -5,7 +5,11 @@ noteOrRestLengths = [
 'quarter',
 'eighth',
 'sixteenth',
-'32nd'
+'32nd',
+'halfNoteTriplet',
+'quarterNoteTriplet',
+'eighthNoteTriplet',
+'sixteenthNoteTriplet'
 ]
 pitches = [
 'A0',
@@ -106,20 +110,20 @@ pitches = [
 'C8'
 ]
 def writeTrack():
-    print("     validating your input... ")
-    if not os.path.exists(os.path.join(os.getcwd(),"myInput.txt")):
-        raise Exception("`myInput.txt` must exist")
-    with open("myInput.txt", "rt", encoding="utf-8") as f:
+    print('     validating your input... ')
+    if not os.path.exists(os.path.join(os.getcwd(),'myInput.txt')):
+        raise Exception('`myInput.txt` must exist')
+    with open('myInput.txt', 'rt', encoding='utf-8') as f:
         myInput = f.read()
     d = eval(myInput) # 'd' for python dict
-    if not "metronomeSpeed" in dict.keys(d):
-        raise Exception("please specify `metronomeSpeed`")
+    if not 'metronomeSpeed' in dict.keys(d):
+        raise Exception('please specify `metronomeSpeed`')
     if type(d["metronomeSpeed"]) is not int:
         raise Exception('type("metronomeSpeed") must be int')
     if len(dict.keys(d)) < 2:
-        raise Exception("please add at least one channel")
+        raise Exception('please add at least one channel')
     for X in dict.keys(d):
-        if X != "metronomeSpeed":
+        if X != 'metronomeSpeed':
             if type(d[X]) is not list:
                 raise Exception('type("' + X + '") must be list')
             if len(d[X]) == 0:
@@ -167,3 +171,24 @@ def writeTrack():
                     ]
 }
 '''
+match thisNoteOrRestLength:
+    case 'whole':
+        relativeLength = 4 # beats
+    case 'half':
+        relativeLength = 2
+    case 'quarter':
+        relativeLength = 1
+    case 'eighth':
+        relativeLength = (4/8)
+    case 'sixteenth':
+        relativeLength = (4/16)
+    case '32nd':
+        relativeLength = (4/32)
+    case 'halfNoteTriplet':
+        relativeLength = (4/3)
+    case 'quarterNoteTriplet':
+        relativeLength = (2/3)
+    case 'eighthNoteTriplet':
+        relativeLength = (1/3)
+    case 'sixteenthNoteTriplet':
+        relativeLength = ((1/3)/2)
