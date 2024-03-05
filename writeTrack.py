@@ -1,4 +1,7 @@
+print('     loading required modules... ')
+import numpy
 import os
+import wave
 # for how I processed samples/patches, see https://sound.stackexchange.com/questions/22769/are-there-free-records-of-separate-piano-notes-in-wav-files-for-instance 
 noteOrRestLengths = [
 'whole',
@@ -152,6 +155,7 @@ def getChannelLength(c):
     return(lengthOfThisChannel)
 #
 def writeTrack():
+    #
     print('     validating your input... ')
     if not os.path.exists(os.path.join(os.getcwd(),'myInput.txt')):
         raise Exception('`myInput.txt` must exist')
@@ -209,7 +213,44 @@ def writeTrack():
         for y in k[1:]:
             if getChannelLength(d[y]) != lengthOfFirstChannel:
                 raise Exception('length of channel "' + k[0] '" = ' + str(round(lengthOfFirstChannel,3)) + ' but length of channel "' + y + '" = ' + str(round(getChannelLength(d[y]),3))) 
-
+    #
+    print('     reading patch files... ')
+    q = dict.keys(d)
+    q.remove('metronomeSpeed')
+    for thisChannel in q:
+        allFramesForThisChannel = bytes()
+        for thisNoteOrRest in thisChannel:
+#                                  beats                                                *  minutes/beat           * s/min  * frames/s 
+            nFramesOfPatchToRead = howManyBeats(thisNoteOrRest["thisNoteOrRestLength"]) * (1/d["metronomeSpeed"]) * (60/1) * 48000 
+            if thisNoteOrRest["isRest"]:
+                filepath = os.path.join(os.getcwd(), "samplesPatchesEtc", "silence.wav")
+            else:
+                filepath = os.path.join(os.getcwd(), "samplesPatchesEtc", "piano", thisNoteOrRest["pitch"], ".wav") 
+            with wave.open(filepath, "r") as f: 
+                if f.getnchannels() != 2:
+                    raise Exception('f.getnchannels() must == 2')
+                if f.getsampwidth() != 2:
+                    raise Exception('f.getsampwidth() must == 2')
+                if f.getframerate() != 48000:
+                    raise Exception('f.getframerate() must == 48000')
+                theFrames = f.readframes(nFramesOfPatchToRead)[0::2] # don't need stereo 
+            allFramesForThisChannel += theFrames
+        ## l = ['A','B','C']
+        ## m = ['a','b','c']
+        ## n = ['1', '2', '3']
+        ## o = numpy.repeat(numpy.array([' ']), 3)
+        ## p = "".join(["".join(list(x)) for x in zip(l, m, n, o)])
+        ## p
+        
+        
+        
+        
+        
+        
+        
+        
+        
+                    
 '''
 {
 "metronomeSpeed":   80,
