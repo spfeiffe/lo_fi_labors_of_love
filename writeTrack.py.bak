@@ -1,4 +1,5 @@
 import os
+# for how I processed samples/patches, see https://sound.stackexchange.com/questions/22769/are-there-free-records-of-separate-piano-notes-in-wav-files-for-instance 
 noteOrRestLengths = [
 'whole',
 'half',
@@ -11,6 +12,30 @@ noteOrRestLengths = [
 'eighthNoteTriplet',
 'sixteenthNoteTriplet'
 ]
+#
+def howManyBeats(thisNoteOrRestLength):
+    match thisNoteOrRestLength:
+        case 'whole':
+            return(4) #
+        case 'half':
+            return(2)
+        case 'quarter':
+            return(1)
+        case 'eighth':
+            return(4/8)
+        case 'sixteenth':
+            return(4/16)
+        case '32nd':
+            return(4/32)
+        case 'halfNoteTriplet':
+            return(4/3)
+        case 'quarterNoteTriplet':
+            return(2/3)
+        case 'eighthNoteTriplet':
+            return(1/3)
+        case 'sixteenthNoteTriplet':
+            return((1/3)/2)
+#
 pitches = [
 'A0',
 'Ab0',
@@ -109,6 +134,23 @@ pitches = [
 #
 'C8'
 ]
+#
+def getChannelLength(c):
+    lengthOfThisChannel = 0
+    if type(c) is not list:
+        raise Exception('type(c) must be list')
+    for i in range(len(c)):
+        if type(c[i]) is not dict:
+            raise Exception('type(c[' + str(i) + '] must be dict')
+        if 'noteOrRestLength' not in dict.keys(c[i]):
+            raise Exception('"noteOrRestLength" must be in dict.keys(c[' + str(i) + '])')
+        if '_' in c[i]["noteOrRestLength"]:
+            for thisNoteStem in c[i]["noteOrRestLength"].split('_'):
+                lengthOfThisChannel += howManyBeats(thisNoteStem)
+        else:
+            lengthOfThisChannel += howManyBeats(c[i]["noteOrRestLength"])
+    return(lengthOfThisChannel)
+#
 def writeTrack():
     print('     validating your input... ')
     if not os.path.exists(os.path.join(os.getcwd(),'myInput.txt')):
@@ -158,6 +200,13 @@ def writeTrack():
                         raise Exception('["' + X + '"][' + str(i) + ']["volume"] must be "mf" for this version')
                     if d[X][i]["attackRelease"] != "marcato":
                         raise Exception('["' + X + '"][' + str(i) + ']["attackRelease"] must be "marcato" for this version') 
+    k = []
+    for K in dict.keys(d):
+        k.append(K)
+    k.remove('metronomeSpeed')
+    lengthOfFirstChannel = getChannelLength(d[k[0]])
+    for y in k[1:]:
+        
 '''
 {
 "metronomeSpeed":   80,
@@ -171,14 +220,3 @@ def writeTrack():
                     ]
 }
 '''
-match thisNoteOrRestLength:
-    case 'whole':
-    case 'half':
-    case 'quarter':
-    case 'eighth':
-    case 'sixteenth':
-    case '32nd':
-    case 'halfNoteTriplet':
-    case 'quarterNoteTriplet':
-    case 'eighthNoteTriplet':
-    case 'sixteenthNoteTriplet':
