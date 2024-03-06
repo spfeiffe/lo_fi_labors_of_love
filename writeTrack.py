@@ -154,6 +154,21 @@ def getChannelLength(c):
             lengthOfThisChannel += howManyBeats(c[i]["noteOrRestLength"])
     return(lengthOfThisChannel)
 #
+def interleaveThisListOfByteArrays(L):
+  myOutput = bytearray(b'')
+  if type(L) is not list:
+    raise Exception('type(L) must be list')
+  for i in range(len(L)):
+    if type(L[i]) is not bytes:
+      raise Exception('type(L[' + str(i) + ']) must be bytes')
+    if len(L[i]) != len(L[0]):
+      raise Exception('all bytearrays within L must be of equal length') 
+    for j in [item[i] for item in L]:
+      # print(j)
+      myOutput.append(j)
+  return myOutput
+# print( interleaveThisListOfByteArrays([b'ABC', b'abc', b'xyz']) )
+#
 def writeTrack():
     #
     print('     validating your input... ')
@@ -215,12 +230,13 @@ def writeTrack():
                 raise Exception('length of channel "' + k[0] '" = ' + str(round(lengthOfFirstChannel,3)) + ' but length of channel "' + y + '" = ' + str(round(getChannelLength(d[y]),3))) 
     #
     print('     reading patch files... ')
+    allFramesForAllChannels = []
     q = dict.keys(d)
     q.remove('metronomeSpeed')
     for thisChannel in q:
         allFramesForThisChannel = bytes()
         for thisNoteOrRest in thisChannel:
-#                                  beats                                                *  minutes/beat           * s/min  * frames/s 
+            #                      beats                                                *  minutes/beat           * s/min  * frames/s 
             nFramesOfPatchToRead = howManyBeats(thisNoteOrRest["thisNoteOrRestLength"]) * (1/d["metronomeSpeed"]) * (60/1) * 48000 
             if thisNoteOrRest["isRest"]:
                 filepath = os.path.join(os.getcwd(), "samplesPatchesEtc", "silence.wav")
@@ -235,15 +251,11 @@ def writeTrack():
                     raise Exception('f.getframerate() must == 48000')
                 theFrames = f.readframes(nFramesOfPatchToRead)[0::2] # don't need stereo 
             allFramesForThisChannel += theFrames
-        ## l = ['A','B','C']
-        ## m = ['a','b','c']
-        ## n = ['1', '2', '3']
-        ## o = numpy.repeat(numpy.array([' ']), 3)
-        ## p = "".join(["".join(list(x)) for x in zip(l, m, n, o)])
-        ## p
-        
-        
-        
+        allFramesForAllChannels.append(allFramesForThisChannel)
+    allFramesReadyToWrite = interleaveThisListOfByteArrays(allFramesForAllChannels)
+    #
+    print('     writing audio... ')
+    
         
         
         
